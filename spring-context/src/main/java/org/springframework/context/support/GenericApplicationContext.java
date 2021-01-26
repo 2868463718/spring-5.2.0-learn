@@ -109,6 +109,11 @@ public class GenericApplicationContext extends AbstractApplicationContext implem
 	 * @see #refresh
 	 */
 	public GenericApplicationContext() {
+		//todo,隐式调用父类的构造方法，去看看
+		super();
+		/**
+		 * AnnotationConfigApplicationContext类首先通过调用父类构造器创建一个beanFactory工厂，专门用来生成bean对象
+		 */
 		this.beanFactory = new DefaultListableBeanFactory();
 	}
 

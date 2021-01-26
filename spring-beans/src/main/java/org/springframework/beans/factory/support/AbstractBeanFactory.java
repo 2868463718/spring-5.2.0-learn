@@ -181,6 +181,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	 * Create a new AbstractBeanFactory.
 	 */
 	public AbstractBeanFactory() {
+		//todo ，调用父类的构造器，，建议去瞅瞅
+		super();//父类没有显示构造器，不过还是会隐式调用父类的构造器，然后一级一级的调用父类的构造函数
 	}
 
 	/**

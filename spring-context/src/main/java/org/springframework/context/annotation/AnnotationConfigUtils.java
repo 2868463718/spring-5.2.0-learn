@@ -148,6 +148,10 @@ public abstract class AnnotationConfigUtils {
 	public static Set<BeanDefinitionHolder> registerAnnotationConfigProcessors(
 			BeanDefinitionRegistry registry, @Nullable Object source) {
 
+		//todo
+		/**
+		 * 获取beanfactory
+		 */
 		DefaultListableBeanFactory beanFactory = unwrapDefaultListableBeanFactory(registry);
 		if (beanFactory != null) {
 			if (!(beanFactory.getDependencyComparator() instanceof AnnotationAwareOrderComparator)) {
@@ -158,20 +162,51 @@ public abstract class AnnotationConfigUtils {
 			}
 		}
 
+		/**
+		 * 设置BeanDefinitionHolder，主要是记录  beandefinition的别名，名字和JavaBean，这里主要是后置处理器
+		 */
 		Set<BeanDefinitionHolder> beanDefs = new LinkedHashSet<>(8);
 
+		/**
+		 * org.springframework.context.annotation.internalConfigurationAnnotationProcessor
+		 * 向beanfactory注册org.springframework.context.annotation.ConfigurationClassPostProcessor类
+		 * 顺便设置该类的处理类BeanDefinitionHolder
+		 */
+		/**
+		 * @Configuration 注解的解析器，即BeanFactoryPostProcessor，专门 用于处理@Configuration注解的工厂的后置处理器
+		 * https://www.cnblogs.com/jiaoqq/p/7678037.html
+		 */
+		//todo
 		if (!registry.containsBeanDefinition(CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(ConfigurationClassPostProcessor.class);
 			def.setSource(source);
 			beanDefs.add(registerPostProcessor(registry, def, CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME));
 		}
 
+		/**
+		 * 注册org.springframework.context.annotation.internalAutowiredAnnotationProcessor
+		 * 对应的类org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
+		 */
+		/**
+		 * 注册BeanPostProcessor 后置处理器，在JavaBean初始化前后调用，主要是处理@Autowired注解
+		 * https://www.cnblogs.com/lzeffort/p/7748611.html
+		 */
+		//todo
 		if (!registry.containsBeanDefinition(AUTOWIRED_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(AutowiredAnnotationBeanPostProcessor.class);
 			def.setSource(source);
 			beanDefs.add(registerPostProcessor(registry, def, AUTOWIRED_ANNOTATION_PROCESSOR_BEAN_NAME));
 		}
 
+		/**
+		 * org.springframework.context.annotation.internalCommonAnnotationProcessor
+		 * org.springframework.context.annotation.CommonAnnotationBeanPostProcessor
+		 */
+		/**
+		 * 注册BeanPostProcessor，处理@EJB，@WebServiceRef，@Resource，@PreDestroy，@PostConstruct 注解的处理
+		 * https://blog.csdn.net/shenchaohao12321/article/details/81235571
+		 */
+		//todo
 		// Check for JSR-250 support, and if present add the CommonAnnotationBeanPostProcessor.
 		if (jsr250Present && !registry.containsBeanDefinition(COMMON_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(CommonAnnotationBeanPostProcessor.class);
@@ -179,6 +214,10 @@ public abstract class AnnotationConfigUtils {
 			beanDefs.add(registerPostProcessor(registry, def, COMMON_ANNOTATION_PROCESSOR_BEAN_NAME));
 		}
 
+		/**
+		 * org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor
+		 *
+		 */
 		// Check for JPA support, and if present add the PersistenceAnnotationBeanPostProcessor.
 		if (jpaPresent && !registry.containsBeanDefinition(PERSISTENCE_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition();
@@ -194,12 +233,25 @@ public abstract class AnnotationConfigUtils {
 			beanDefs.add(registerPostProcessor(registry, def, PERSISTENCE_ANNOTATION_PROCESSOR_BEAN_NAME));
 		}
 
+		/**
+		 * org.springframework.context.event.internalEventListenerProcessor
+		 * org.springframework.context.event.EventListenerMethodProcessor
+		 */
+		/**
+		 * 对于@EventListener 注解的处理，BeanFactoryPostProcessor
+		 * https://www.cnblogs.com/elvinle/p/13298007.html
+		 */
+		//todo
 		if (!registry.containsBeanDefinition(EVENT_LISTENER_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(EventListenerMethodProcessor.class);
 			def.setSource(source);
 			beanDefs.add(registerPostProcessor(registry, def, EVENT_LISTENER_PROCESSOR_BEAN_NAME));
 		}
 
+		/**
+		 * org.springframework.context.event.internalEventListenerFactory
+		 * org.springframework.context.event.DefaultEventListenerFactory
+		 */
 		if (!registry.containsBeanDefinition(EVENT_LISTENER_FACTORY_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(DefaultEventListenerFactory.class);
 			def.setSource(source);
@@ -236,6 +288,9 @@ public abstract class AnnotationConfigUtils {
 
 	static void processCommonDefinitionAnnotations(AnnotatedBeanDefinition abd, AnnotatedTypeMetadata metadata) {
 		AnnotationAttributes lazy = attributesFor(metadata, Lazy.class);
+		/**
+		 * 确认是否是懒加载
+		 */
 		if (lazy != null) {
 			abd.setLazyInit(lazy.getBoolean("value"));
 		}
@@ -246,18 +301,30 @@ public abstract class AnnotationConfigUtils {
 			}
 		}
 
+		/**
+		 * @Primary注解
+		 */
 		if (metadata.isAnnotated(Primary.class.getName())) {
 			abd.setPrimary(true);
 		}
+		/**
+		 * @DependsOn注解
+		 */
 		AnnotationAttributes dependsOn = attributesFor(metadata, DependsOn.class);
 		if (dependsOn != null) {
 			abd.setDependsOn(dependsOn.getStringArray("value"));
 		}
 
+		/**
+		 * @Role
+		 */
 		AnnotationAttributes role = attributesFor(metadata, Role.class);
 		if (role != null) {
 			abd.setRole(role.getNumber("value").intValue());
 		}
+		/**
+		 * @Description
+		 */
 		AnnotationAttributes description = attributesFor(metadata, Description.class);
 		if (description != null) {
 			abd.setDescription(description.getString("value"));

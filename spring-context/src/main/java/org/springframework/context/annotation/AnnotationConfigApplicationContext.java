@@ -63,7 +63,31 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 * through {@link #register} calls and then manually {@linkplain #refresh refreshed}.
 	 */
 	public AnnotationConfigApplicationContext() {
+		//TODO 每一个类的构造函数都会调用父类的构造函数，可能不会写super（）显示调用，但是都会调用，这里使没有显示调用，隐式调用父类的方法
+		/**
+		 * 调用父类以及父类的父类的构造器，目前主要是创建一个DefaultListableBeanFactory 的bean工厂，还有就是获取类加载器（默认当前线程的类加载器）
+		 */
+		super();
+
+		/**
+		 * beanDefinitionReader接口,读取配置文件，转换成beanDefinition,这里是将标有@Service，@Component，等等注解的类的一些信息转换成beanDefinition类
+		 * 该类记录了指定JavaBean的一些信息，它存储了 bean 对象的所有特征信息，如是否单例，是否懒加载，factoryBeanName 等
+		 * 那么就需要一个注解配置读取器，来读取这些信息
+		 */
 		this.reader = new AnnotatedBeanDefinitionReader(this);
+
+		/**
+		 * 如果我想对用户指定的包目录进行扫描查找 bean 对象，那么还需要一个路径扫描器BeanDefinitionScanner
+		 * 专门用来扫描标有@Service，@Component 等等注解的JavaBean，然后通过AnnotatedBeanDefinitionReader来读取信息
+		 */
+		//todo
+		/**
+		 * 这里只是创建一个扫描器，主要是扫描@component，注解的类
+		 */
+		/**
+		 * 主要是添加默认的要扫描的标有指定注解的类，@component，和 @javax.annotation.ManagedBean（JSR-250）
+		 * @javax.inject.Named（JSR-330），当然@service都是继承@component注解，所以不需要加@service等等
+		 */
 		this.scanner = new ClassPathBeanDefinitionScanner(this);
 	}
 

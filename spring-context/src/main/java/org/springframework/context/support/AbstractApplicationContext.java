@@ -226,6 +226,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * Create a new AbstractApplicationContext with no parent.
 	 */
 	public AbstractApplicationContext() {
+		//todo,父类构造器，去瞅瞅，主要是创建一个类加载器，
+		super();
+
 		this.resourcePatternResolver = getResourcePatternResolver();
 	}
 
@@ -326,6 +329,13 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * a custom {@link ConfigurableEnvironment} implementation.
 	 */
 	protected ConfigurableEnvironment createEnvironment() {
+
+		//todo
+		/**
+		 * 这里只是创建一个标准的环境对象，包含了Java虚拟机的一些配置信息 以及系统的信息
+		 * System.getProperties()
+		 * System.getenv()
+		 */
 		return new StandardEnvironment();
 	}
 
@@ -455,6 +465,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @see org.springframework.core.io.support.PathMatchingResourcePatternResolver
 	 */
 	protected ResourcePatternResolver getResourcePatternResolver() {
+		/**
+		 * 将当前对象传入，获取一个ResourcePatternResolver
+		 */
 		return new PathMatchingResourcePatternResolver(this);
 	}
 
@@ -522,6 +535,18 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
+			/**
+			 * 为工厂添加一些材料，用于后面的操作的顺利进行，工厂添加一些属性值，用于后面对于bean的操作
+			 * 添加了如下操作：
+			 * 初始化类加载器
+			 * 初始化spel解析器
+			 * 设置属性注册解析器PropertyEditor 这个主要是对bean的属性等设置管理的一个工具
+			 * 增加一个处理Aware相关接口的Bean处理器 并设置相关忽略的接口。
+			 * 具体应用在Bean初始化之前，属性填充过程中，进行属性的过滤。对于实现这些接口的，不做处理，由ApplicationContextAwareProcess处理。
+			 *加入一个监听器相关的监听器，主要作用是，将监听器的Bean加入到  详见 Bean相关的处理器(
+			 * 将默认的环境Bean注入到容器中，environment、systemProperties、SystemEnvironment，
+			 * 等等。。。。
+			 */
 			prepareBeanFactory(beanFactory);
 
 			try {
@@ -643,14 +668,35 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * such as the context's ClassLoader and post-processors.
 	 * @param beanFactory the BeanFactory to configure
 	 */
+	/**
+	 * https://blog.csdn.net/NEW_BUGGER/article/details/106258460，博客地址
+	 * @param beanFactory
+	 */
 	protected void prepareBeanFactory(ConfigurableListableBeanFactory beanFactory) {
-		// Tell the internal bean factory to use the context's class loader etc.
+		//Tell the internal bean factory to use the context's class loader etc .
+		/**
+		 * 设置工厂的bean的类加载器 ，设置类加载器：存在则直接设置/不存在则新建一个默认类加载器
+		 */
 		beanFactory.setBeanClassLoader(getClassLoader());
+		/**
+		 * 设置spring的表达式解析器，其实就是将 配置文件中对应的表达式解析的解析器，spel解析器，设置EL表达式解析器（Bean初始化完成后填充属性时会用到）
+		 */
 		beanFactory.setBeanExpressionResolver(new StandardBeanExpressionResolver(beanFactory.getBeanClassLoader()));
+
+		/**
+		 *设置属性注册解析器PropertyEditor
+		 */
 		beanFactory.addPropertyEditorRegistrar(new ResourceEditorRegistrar(this, getEnvironment()));
 
 		// Configure the bean factory with context callbacks.
+		/**
+		 * 将当前的ApplicationContext对象交给ApplicationContextAwareProcessor类来处理，从而在Aware接口实现类中的注入applicationContext
+		 *添加一个beanpostprocessor，用于bean初始化前后调用
+		 */
 		beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
+		/**
+		 * 设置忽略自动装配的接口
+		 */
 		beanFactory.ignoreDependencyInterface(EnvironmentAware.class);
 		beanFactory.ignoreDependencyInterface(EmbeddedValueResolverAware.class);
 		beanFactory.ignoreDependencyInterface(ResourceLoaderAware.class);
@@ -658,6 +704,13 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.ignoreDependencyInterface(MessageSourceAware.class);
 		beanFactory.ignoreDependencyInterface(ApplicationContextAware.class);
 
+		/**
+		 * https://blog.csdn.net/yuge1123/article/details/106053857
+		 * 在Spring自动装配的时候如果一个接口有多个实现类，并且都已经放到IOC中去了，
+		 * 那么自动装配的时候就会出异常，因为spring不知道把哪个实现类注入进去，
+		 * 但是如果我们自定义一个类，然后实现BeanFactoryPostProcessor接口
+		 * 在该阶段调用这个方法，如果哪个地方要自动注入这个类型的对象的话，那么就注入进去我们指定的对象
+		 */
 		// BeanFactory interface not registered as resolvable type in a plain factory.
 		// MessageSource registered (and found for autowiring) as a bean.
 		beanFactory.registerResolvableDependency(BeanFactory.class, beanFactory);
@@ -666,16 +719,30 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.registerResolvableDependency(ApplicationContext.class, this);
 
 		// Register early post-processor for detecting inner beans as ApplicationListeners.
+		/**
+		 * 加入一个监听器相关的监听器，主要作用是，将监听器的Bean加入到  详见 Bean相关的处理器(二)、ApplicationListenerDetector 介绍
+		 */
 		beanFactory.addBeanPostProcessor(new ApplicationListenerDetector(this));
 
 		// Detect a LoadTimeWeaver and prepare for weaving, if found.
+		/**
+		 * 检查容器中是否包含名称为loadTimeWeaver的bean  具体详见：代码的织入方式之loadTimeWeaver详解
+		 * AspectJ采用编译期织入、类加载期织入两种方式进行切面的织入
+		 */
 		if (beanFactory.containsBean(LOAD_TIME_WEAVER_BEAN_NAME)) {
+			/**
+			 *       // 在BEAN初始化之前检查BEAN是否实现了LoadTimeWeaverAware接口，
+			 *       // 如果是，则进行加载时织入，即静态代理。
+			 */
 			beanFactory.addBeanPostProcessor(new LoadTimeWeaverAwareProcessor(beanFactory));
 			// Set a temporary ClassLoader for type matching.
 			beanFactory.setTempClassLoader(new ContextTypeMatchClassLoader(beanFactory.getBeanClassLoader()));
 		}
 
 		// Register default environment beans.
+		/**
+		 * 将默认的环境Bean注入到容器中，environment、systemProperties、SystemEnvironment
+		 */
 		if (!beanFactory.containsLocalBean(ENVIRONMENT_BEAN_NAME)) {
 			beanFactory.registerSingleton(ENVIRONMENT_BEAN_NAME, getEnvironment());
 		}
@@ -703,6 +770,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * <p>Must be called before singleton instantiation.
 	 */
 	protected void invokeBeanFactoryPostProcessors(ConfigurableListableBeanFactory beanFactory) {
+		/**
+		 * 1.getBeanFactoryPostProcessors(): 拿到当前应用上下文beanFactoryPostProcessors变量中的值,在默认情况下，this.beanFactoryPostProcessors 是返回空的。
+		 * 可以在main方法中调用addBeanFactoryPostProcessor方法添加
+		 * 2.invokeBeanFactoryPostProcessors: 实例化并调用所有已注册的BeanFactoryPostProcessor
+		 */
 		PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(beanFactory, getBeanFactoryPostProcessors());
 
 		// Detect a LoadTimeWeaver and prepare for weaving, if found in the meantime

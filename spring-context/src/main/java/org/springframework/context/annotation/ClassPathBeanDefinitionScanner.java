@@ -163,6 +163,11 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 		this.registry = registry;
 
 		if (useDefaultFilters) {
+			//todo
+			/**
+			 * 主要是添加默认的要扫描的标有指定注解的类，@component，和 @javax.annotation.ManagedBean（JSR-250）
+			 * @javax.inject.Named（JSR-330），当然@service都是继承@component注解，所以不需要加@service等等
+			 */
 			registerDefaultFilters();
 		}
 		setEnvironment(environment);

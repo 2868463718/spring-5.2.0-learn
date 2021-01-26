@@ -222,6 +222,10 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 	 * actual resources with
 	 */
 	public PathMatchingResourcePatternResolver(ResourceLoader resourceLoader) {
+		/**
+		 * 将上下文的ResourceLoader，赋值给PathMatchingResourcePatternResolver
+		 * ，这个类里面现在就有上下文的类加载器
+		 */
 		Assert.notNull(resourceLoader, "ResourceLoader must not be null");
 		this.resourceLoader = resourceLoader;
 	}
