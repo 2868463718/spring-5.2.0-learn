@@ -146,6 +146,9 @@ public class InitDestroyAnnotationBeanPostProcessor
 
 	@Override
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
+		/**
+		 * 扫描处理 @PostConstruct和@PreDestroy 注解标注的方法，解析，然后放到缓存中
+		 */
 		LifecycleMetadata metadata = findLifecycleMetadata(beanType);
 		metadata.checkConfigMembers(beanDefinition);
 	}
@@ -229,7 +232,13 @@ public class InitDestroyAnnotationBeanPostProcessor
 			final List<LifecycleElement> currInitMethods = new ArrayList<>();
 			final List<LifecycleElement> currDestroyMethods = new ArrayList<>();
 
+			/**
+			 * 反射获取一个Class所有的方法，函数式编程
+			 */
 			ReflectionUtils.doWithLocalMethods(targetClass, method -> {
+				/**
+				 * 如果方法被@PostConstruct 注解，就解析，处理@PostConstruct注解的方法
+				 */
 				if (this.initAnnotationType != null && method.isAnnotationPresent(this.initAnnotationType)) {
 					LifecycleElement element = new LifecycleElement(method);
 					currInitMethods.add(element);
@@ -237,6 +246,9 @@ public class InitDestroyAnnotationBeanPostProcessor
 						logger.trace("Found init method on class [" + clazz.getName() + "]: " + method);
 					}
 				}
+				/**
+				 * 如果方法被@PreDestroy 注解，就解析，处理@PreDestroy注解的方法
+				 */
 				if (this.destroyAnnotationType != null && method.isAnnotationPresent(this.destroyAnnotationType)) {
 					currDestroyMethods.add(new LifecycleElement(method));
 					if (logger.isTraceEnabled()) {
@@ -249,8 +261,14 @@ public class InitDestroyAnnotationBeanPostProcessor
 			destroyMethods.addAll(currDestroyMethods);
 			targetClass = targetClass.getSuperclass();
 		}
+		/**
+		 * 递归处理，找出一个类及其父类，父类的父类标注的这两个注解的方法，直到object对象
+		 */
 		while (targetClass != null && targetClass != Object.class);
 
+		/**
+		 * 如果没有找到指定注解的方法，就返回一个目标类为object的生命周期元数据对象，该对象包含 @PostConstruct和@PreDestroy 注解标注的方法，
+		 */
 		return (initMethods.isEmpty() && destroyMethods.isEmpty() ? this.emptyLifecycleMetadata :
 				new LifecycleMetadata(clazz, initMethods, destroyMethods));
 	}
@@ -368,6 +386,9 @@ public class InitDestroyAnnotationBeanPostProcessor
 		private final String identifier;
 
 		public LifecycleElement(Method method) {
+			/**
+			 * 由此说明，@PostConstruct和@PreDestroy  注解标注的方法  -->不能有参数
+			 */
 			if (method.getParameterCount() != 0) {
 				throw new IllegalStateException("Lifecycle method annotation requires a no-arg method: " + method);
 			}

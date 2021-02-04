@@ -16,7 +16,7 @@ public class SpringTest {
 	public void testSpringContainer(){
 		AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(AppConfig.class);
 		User user = applicationContext.getBean(User.class);
-		System.out.println(user);
+		System.out.println(user.toString());
 
 		/**
 		 * 主要测试addBeanFactoryPostProcessor方法

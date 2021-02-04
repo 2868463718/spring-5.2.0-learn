@@ -1001,6 +1001,12 @@ public class ResolvableType implements Serializable {
 	 * @see #forClass(Class)
 	 * @see #getRawClass()
 	 */
+	/**
+	 * Raw 生的，原始的
+	 * https://cloud.tencent.com/developer/article/1656249 博客地址
+	 * @param clazz
+	 * @return
+	 */
 	public static ResolvableType forRawClass(@Nullable Class<?> clazz) {
 		return new ResolvableType(clazz) {
 			@Override

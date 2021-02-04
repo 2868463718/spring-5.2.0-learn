@@ -291,6 +291,9 @@ public class AnnotatedBeanDefinitionReader {
 		abd.setScope(scopeMetadata.getScopeName());
 		/**
 		 * beanNameGenerator--->bean名字生成器
+		 *
+		 * ，这一步也会把该类上的注解信息封装到Metadata中，annitationTypes会出现该类上指定注解名称字符串
+		 * ，metadata属性中的mergedAnnotations属性中的aggregates属性会存储解析的该类上的所有注解信息
 		 */
 		String beanName = (name != null ? name : this.beanNameGenerator.generateBeanName(abd, this.registry));
 

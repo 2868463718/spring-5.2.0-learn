@@ -113,6 +113,9 @@ public class InjectionMetadata {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Processing injected element of bean '" + beanName + "': " + element);
 				}
+				/**
+				 * 最终注入的地方
+				 */
 				element.inject(target, beanName, pvs);
 			}
 		}
@@ -218,9 +221,19 @@ public class InjectionMetadata {
 		protected void inject(Object target, @Nullable String requestingBeanName, @Nullable PropertyValues pvs)
 				throws Throwable {
 
+			/**
+			 * 给字段赋值，依赖注入 @Resource注解
+			 * 依赖注入
+			 */
 			if (this.isField) {
 				Field field = (Field) this.member;
+				/**
+				 * 暴力赋值
+				 */
 				ReflectionUtils.makeAccessible(field);
+				/**
+				 * getResourceToInject里面有getBean操作，而getBean如果bean未创建，就进行创建操作，然后放到缓存池，然后注入到字段中
+				 */
 				field.set(target, getResourceToInject(target, requestingBeanName));
 			}
 			else {
@@ -230,6 +243,9 @@ public class InjectionMetadata {
 				try {
 					Method method = (Method) this.member;
 					ReflectionUtils.makeAccessible(method);
+					/**
+					 * 是方法的话，一样的反射注入，执行方法invoke
+					 */
 					method.invoke(target, getResourceToInject(target, requestingBeanName));
 				}
 				catch (InvocationTargetException ex) {

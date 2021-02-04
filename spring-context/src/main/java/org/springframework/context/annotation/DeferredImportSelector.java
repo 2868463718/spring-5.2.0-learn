@@ -52,6 +52,7 @@ public interface DeferredImportSelector extends ImportSelector {
 
 
 	/**
+	 * 用于对来自不同导入选择器的结果进行分组的界面
 	 * Interface used to group results from different import selectors.
 	 */
 	interface Group {
@@ -59,12 +60,19 @@ public interface DeferredImportSelector extends ImportSelector {
 		/**
 		 * Process the {@link AnnotationMetadata} of the importing @{@link Configuration}
 		 * class using the specified {@link DeferredImportSelector}.
+		 * 上面分组完成后spring会调用该方法，循环List里的DeferredImportSelector 类，并循环调用process方法
+		 * AnnotationMetadata :当前循环的DeferredImportSelector 的导入配置类（当前@Import注解的类）
+		 *
+		 *
+		 * 具体执行是在process方法里，在他之前的代码中已经将@componentScans、@propertySource、@Bean等注解解析完了, 包括@Import实现ImportBeanDefinitionRegistrar和ImportSelector接口的类
 		 */
 		void process(AnnotationMetadata metadata, DeferredImportSelector selector);
 
 		/**
 		 * Return the {@link Entry entries} of which class(es) should be imported
 		 * for this group.
+		 * 每个Group只执行一次，返回一个迭代器，spring会使用迭代器的forEach方法进行迭代，
+		 * 想要导入spting容器的类要封装成Entry对象，且返回的对象不能为null，会报错（设计问题）
 		 */
 		Iterable<Entry> selectImports();
 
@@ -79,6 +87,12 @@ public interface DeferredImportSelector extends ImportSelector {
 
 			private final String importClassName;
 
+			/**
+			 * AnnotationMetadata :必须是一个将DeferredImportSelector 导入的配置类，要不会报错，而且不能new
+			 * importClassName：需要导入类的类路径名
+			 * @param metadata
+			 * @param importClassName
+			 */
 			public Entry(AnnotationMetadata metadata, String importClassName) {
 				this.metadata = metadata;
 				this.importClassName = importClassName;

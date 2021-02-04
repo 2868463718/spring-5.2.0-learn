@@ -278,12 +278,25 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 		Assert.notEmpty(basePackages, "At least one base package must be specified");
 		Set<BeanDefinitionHolder> beanDefinitions = new LinkedHashSet<>();
 		for (String basePackage : basePackages) {
+			/**
+			 * 下面一步操作，是把basePackage这个包及其子包下所有标有@Commpent注解（也包括其子注解@service）的类的信息封装成对应的ScannedGenericBeanDefinition
+			 * 这一步还没有注册到spring容器中对应的map中
+			 */
 			Set<BeanDefinition> candidates = findCandidateComponents(basePackage);
 			for (BeanDefinition candidate : candidates) {
+				/**
+				 * 变量上面一步获取的beandefinition集合，然后进行一些处理，注册到spring容器中
+				 */
 				ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(candidate);
+				/**
+				 * 设置单例或者其他
+				 */
 				candidate.setScope(scopeMetadata.getScopeName());
 				String beanName = this.beanNameGenerator.generateBeanName(candidate, this.registry);
 				if (candidate instanceof AbstractBeanDefinition) {
+					/**
+					 * 给bean设置一些默认值，比如懒加载，初始化或者销毁的方法名字等等
+					 */
 					postProcessBeanDefinition((AbstractBeanDefinition) candidate, beanName);
 				}
 				if (candidate instanceof AnnotatedBeanDefinition) {
@@ -294,6 +307,9 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 					definitionHolder =
 							AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
 					beanDefinitions.add(definitionHolder);
+					/**
+					 * 将BeanDefinition注册到spring容器
+					 */
 					registerBeanDefinition(definitionHolder, this.registry);
 				}
 			}

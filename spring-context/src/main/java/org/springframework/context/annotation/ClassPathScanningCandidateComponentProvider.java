@@ -418,6 +418,12 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 		try {
 			String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
 					resolveBasePackage(basePackage) + '/' + this.resourcePattern;
+			/**
+			 * 获取packageSearchPath包下及其子包下的所有标有@commpent，@service，@controller，@configution，以及@Repository等注解的类的路径
+			 * file [D:\idea\idea2017\workplace\spring-framework-5.2.0.RELEASE\spring-zy-test\build\classes\java\main\zy\blue7\config\AppConfig.class]
+			 * file [D:\idea\idea2017\workplace\spring-framework-5.2.0.RELEASE\spring-zy-test\build\classes\java\main\zy\blue7\demo\BeanDefinitionRegistryPostProcessorDemo.class]
+			 * 等等。。。
+			 */
 			Resource[] resources = getResourcePatternResolver().getResources(packageSearchPath);
 			boolean traceEnabled = logger.isTraceEnabled();
 			boolean debugEnabled = logger.isDebugEnabled();
@@ -429,6 +435,10 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 					try {
 						MetadataReader metadataReader = getMetadataReaderFactory().getMetadataReader(resource);
 						if (isCandidateComponent(metadataReader)) {
+							/**
+							 * 如果扫描到的类标有@Component注解或者其子接口注解，比如@service等等，就生成该类对应的beandefinition信息
+							 * ，谭厚添加到集合中返回
+							 */
 							ScannedGenericBeanDefinition sbd = new ScannedGenericBeanDefinition(metadataReader);
 							sbd.setResource(resource);
 							sbd.setSource(resource);

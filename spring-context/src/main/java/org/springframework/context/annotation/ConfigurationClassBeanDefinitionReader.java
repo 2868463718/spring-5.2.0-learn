@@ -114,6 +114,7 @@ class ConfigurationClassBeanDefinitionReader {
 	 * Read {@code configurationModel}, registering bean definitions
 	 * with the registry based on its contents.
 	 */
+	//todo
 	public void loadBeanDefinitions(Set<ConfigurationClass> configurationModel) {
 		TrackedConditionEvaluator trackedConditionEvaluator = new TrackedConditionEvaluator();
 		for (ConfigurationClass configClass : configurationModel) {
@@ -128,6 +129,11 @@ class ConfigurationClassBeanDefinitionReader {
 	private void loadBeanDefinitionsForConfigurationClass(
 			ConfigurationClass configClass, TrackedConditionEvaluator trackedConditionEvaluator) {
 
+		/**
+		 * 这个方法主要是加载配置类的类信息，封装成beanDefinition
+		 */
+
+
 		if (trackedConditionEvaluator.shouldSkip(configClass)) {
 			String beanName = configClass.getBeanName();
 			if (StringUtils.hasLength(beanName) && this.registry.containsBeanDefinition(beanName)) {
@@ -137,14 +143,30 @@ class ConfigurationClassBeanDefinitionReader {
 			return;
 		}
 
+		/**
+		 * 首先如果是 通过@Import注解导入的，就通过下面方法先将配置类创建对应的beanDefinition对象
+		 */
 		if (configClass.isImported()) {
 			registerBeanDefinitionForImportedConfigurationClass(configClass);
 		}
+		/**
+		 * 每一个配置类可能会有@Bean 注解的方法，将标有该注解的方法对应的类的信息也封装成beanDefinition
+		 */
 		for (BeanMethod beanMethod : configClass.getBeanMethods()) {
 			loadBeanDefinitionsForBeanMethod(beanMethod);
 		}
 
+
+		//todo 明天再说
+		/**
+		 * 加载 通过@ImportedResource注解 引入的xml中对应的类的信息，封装成beandefinition
+		 */
 		loadBeanDefinitionsFromImportedResources(configClass.getImportedResources());
+		//todo
+		/**
+		 *  这里不是加载，只是调用@import注解中引入的类（实现了ImportBeanDefinitionRegistrar 接口的类） 的registerBeanDefinitions 方法
+		 *  当然也可以在这个调用的 方法里面进行beandefinition封装，或者其他操作
+		 */
 		loadBeanDefinitionsFromRegistrars(configClass.getImportBeanDefinitionRegistrars());
 	}
 

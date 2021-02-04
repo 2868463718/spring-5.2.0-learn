@@ -1,5 +1,6 @@
 package zy.blue7.demo;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -8,4 +9,6 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class Teacher {
+//	@Autowired
+//	private User user;
 }

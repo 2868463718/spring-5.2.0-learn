@@ -149,11 +149,22 @@ abstract class ConfigurationClassUtils {
 	 * configuration class processing; {@code false} otherwise
 	 */
 	public static boolean isConfigurationCandidate(AnnotationMetadata metadata) {
+		/**
+		 * 判断是否满足类是配置类（主要是针对配置类的内部类，至少我现在看到的情况是这样的）
+		 */
+
+
+		/**
+		 * 首先如果是配置类，则不能是 接口 或者 注解
+		 */
 		// Do not consider an interface or an annotation...
 		if (metadata.isInterface()) {
 			return false;
 		}
 
+		/**
+		 * 其次最少满足 该类上标注@Component，@ComponentScan，@Import，@ImportResource注解中的一个
+		 */
 		// Any of the typical annotations found?
 		for (String indicator : candidateIndicators) {
 			if (metadata.isAnnotated(indicator)) {
@@ -163,6 +174,9 @@ abstract class ConfigurationClassUtils {
 
 		// Finally, let's look for @Bean methods...
 		try {
+			/**
+			 * 如果以上都不满足，在看看该内部类中是否有@Bean标注的方法，如果有，则也算是配置类，递归解析配置类
+			 */
 			return metadata.hasAnnotatedMethods(Bean.class.getName());
 		}
 		catch (Throwable ex) {

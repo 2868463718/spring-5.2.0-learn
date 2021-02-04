@@ -797,6 +797,9 @@ public abstract class ReflectionUtils {
 	public interface MethodCallback {
 
 		/**
+		 * 函数式编程
+		 */
+		/**
 		 * Perform an operation using the given method.
 		 * @param method the method to operate on
 		 */

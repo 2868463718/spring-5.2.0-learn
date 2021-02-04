@@ -172,6 +172,10 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	@Nullable
 	private String factoryBeanName;
 
+	/**
+	 * 除了constructor-arg和property装配bean的方式，我们还可以通过bean的factory-method方法装配bean，
+	 * factory-method表示的是工厂方法，主要用于装配工厂模式中的静态方法，从而创建一个实例。
+	 */
 	@Nullable
 	private String factoryMethodName;
 

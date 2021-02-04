@@ -129,6 +129,9 @@ class ComponentScanAnnotationParser {
 				return declaringClass.equals(className);
 			}
 		});
+		/**
+		 * 开始扫描配置类上的指定@componentScan注解标注的包，将其中扫描到标有@compent注解的类信息封装，然后注册到spring容器中
+		 */
 		return scanner.doScan(StringUtils.toStringArray(basePackages));
 	}
 

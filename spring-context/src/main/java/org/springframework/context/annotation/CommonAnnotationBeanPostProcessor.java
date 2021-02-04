@@ -205,6 +205,7 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 
 
 	/**
+	 * https://blog.csdn.net/ljw499356212/article/details/98883264
 	 * Create a new CommonAnnotationBeanPostProcessor,
 	 * with the init and destroy annotation types set to
 	 * {@link javax.annotation.PostConstruct} and {@link javax.annotation.PreDestroy},
@@ -212,6 +213,19 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 	 */
 	public CommonAnnotationBeanPostProcessor() {
 		setOrder(Ordered.LOWEST_PRECEDENCE - 3);
+		/**
+		 * 扫描 @PostConstruct 和 @PreDestroy (这个很直观的能看到, 其无参构造函数中, 出现了这两个注解)
+		 * @PostConstruct :
+		 * 		被@PostConstruct修饰的方法会在服务器加载Servlet的时候运行，并且只会被服务器调用一次，类似于Serclet的inti()方法。被@PostConstruct修饰的方法会在构造函数之后，init()方法之前运行。
+		 *
+		 * 通常我们会是在Spring框架中使用到@PostConstruct注解，该注解的方法在整个Bean初始化中的执行顺序：
+		 * Constructor(构造方法) -> @Autowired(依赖注入) -> @PostConstruct(注释的方法)。
+		 *
+		 * @PreDestroy :
+		 * 被@PreDestroy修饰的方法会在服务器卸载Servlet的时候运行，并且只会被服务器调用一次，类似于Servlet的destroy()方法。被@PreDestroy修饰的方法会在destroy()方法之后运行，在Servlet被彻底卸载之前。
+		 *
+		 * 调用destroy()方法->@PreDestroy->destroy()方法->bean销毁。
+		 */
 		setInitAnnotationType(PostConstruct.class);
 		setDestroyAnnotationType(PreDestroy.class);
 		ignoreResourceType("javax.xml.ws.WebServiceContext");
@@ -307,9 +321,20 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 
 	@Override
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
+		/**
+		 * 调用父类方法, 进行@PostConstruct 和 @PreDestroy 扫描，解析，放到缓存中
+		 *
+		 * ，初始化和销毁方法
+		 */
 		super.postProcessMergedBeanDefinition(beanDefinition, beanType, beanName);
+		/**
+		 * 进行 @Resource 扫描
+		 */
 		InjectionMetadata metadata = findResourceMetadata(beanName, beanType, null);
 		metadata.checkConfigMembers(beanDefinition);
+		/**
+		 * 注意到这里，只是进行了扫描转换操作，并没有进行属性的注入工作
+		 */
 	}
 
 	@Override
@@ -329,8 +354,14 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 
 	@Override
 	public PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName) {
+		/**
+		 * 根据beanName找出之前缓存的注解元数据信息
+		 */
 		InjectionMetadata metadata = findResourceMetadata(beanName, bean.getClass(), pvs);
 		try {
+			/**
+			 * 注入（字段和方法，反射）
+			 */
 			metadata.inject(bean, beanName, pvs);
 		}
 		catch (Throwable ex) {
@@ -429,13 +460,25 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 						currElements.add(new EjbRefElement(method, bridgedMethod, pd));
 					}
 					else if (bridgedMethod.isAnnotationPresent(Resource.class)) {
+						/**
+						 * @Resource 不支持静态方法
+						 */
 						if (Modifier.isStatic(method.getModifiers())) {
 							throw new IllegalStateException("@Resource annotation is not supported on static methods");
 						}
 						Class<?>[] paramTypes = method.getParameterTypes();
+						/**
+						 * 如果目标方法, 没有参数, 或者有多个参数, 则抛出异常
+						 */
 						if (paramTypes.length != 1) {
 							throw new IllegalStateException("@Resource annotation requires a single-arg method: " + method);
 						}
+						/**
+						 * 这里拿到方法名, 会去跟类中的属性进行匹配
+						 * 匹配的规则是: method.equals(pd.getReadMethod()) || method.equals(pd.getWriteMethod())
+						 * 这个 readMethod 就是 getXXX 或 isXXX, writeMethod 就是 setXXX
+						 * 如果匹配不上, pd = null
+						 */
 						if (!this.ignoredResourceTypes.contains(paramTypes[0].getName())) {
 							PropertyDescriptor pd = BeanUtils.findPropertyForMethod(bridgedMethod, clazz);
 							currElements.add(new ResourceElement(method, bridgedMethod, pd));
@@ -500,9 +543,15 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 	protected Object getResource(LookupElement element, @Nullable String requestingBeanName)
 			throws NoSuchBeanDefinitionException {
 
+		/**
+		 * 通过jndi工厂获取bean
+		 */
 		if (StringUtils.hasLength(element.mappedName)) {
 			return this.jndiFactory.getBean(element.mappedName, element.lookupType);
 		}
+		/**
+		 * 通过jndi工厂获取bean
+		 */
 		if (this.alwaysUseJndiLookup) {
 			return this.jndiFactory.getBean(element.name, element.lookupType);
 		}
@@ -510,6 +559,9 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 			throw new NoSuchBeanDefinitionException(element.lookupType,
 					"No resource factory configured - specify the 'resourceFactory' property");
 		}
+		/**
+		 * 最终获取bean对象
+		 */
 		return autowireResource(this.resourceFactory, element, requestingBeanName);
 	}
 
@@ -540,6 +592,10 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 				}
 			}
 			else {
+
+				/**
+				 * 这一步获取bean
+				 */
 				resource = beanFactory.resolveBeanByName(name, descriptor);
 				autowiredBeanNames = Collections.singleton(name);
 			}
@@ -649,6 +705,9 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 
 		@Override
 		protected Object getResourceToInject(Object target, @Nullable String requestingBeanName) {
+			/**
+			 * 一般是getResource 获取数据
+			 */
 			return (this.lazyLookup ? buildLazyResourceProxy(this, requestingBeanName) :
 					getResource(this, requestingBeanName));
 		}

@@ -109,6 +109,9 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 */
 	public AnnotationConfigApplicationContext(Class<?>... componentClasses) {
 		this();
+		/**
+		 * 只是解析componentClasses 配置类，将所有的配置类的相关信息封装成beanDefinition，比如类上的注解信息，等等，并没有关于类中属性变量的信息
+		 */
 		register(componentClasses);
 		refresh();
 	}

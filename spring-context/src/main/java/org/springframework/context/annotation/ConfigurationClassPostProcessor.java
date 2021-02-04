@@ -260,6 +260,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			processConfigBeanDefinitions((BeanDefinitionRegistry) beanFactory);
 		}
 
+		/**
+		 * 增强配置类
+		 */
 		enhanceConfigurationClasses(beanFactory);
 		beanFactory.addBeanPostProcessor(new ImportAwareBeanPostProcessor(beanFactory));
 	}
@@ -322,6 +325,11 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		Set<BeanDefinitionHolder> candidates = new LinkedHashSet<>(configCandidates);
 		Set<ConfigurationClass> alreadyParsed = new HashSet<>(configCandidates.size());
 		do {
+			/**
+			 * 这一步解析所有标有@Configuration的类，将其封装成beandefinition然后注册到spring容器中
+			 * ，也将该配置类上配置的@commpentscan，@commpentscans 注解上对应的包下是所有标有@commpent注解的类也封装成对应的beandefinition，注册到spring容器中，
+			 * 如果扫描到的类也包含配置类的特性，则递归处理
+			 */
 			parser.parse(candidates);
 			parser.validate();
 
@@ -334,6 +342,17 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 						registry, this.sourceExtractor, this.resourceLoader, this.environment,
 						this.importBeanNameGenerator, parser.getImportRegistry());
 			}
+			/**
+			 * 加载配置类，封装成beandefinition，
+			 *
+			 * 1.首先如果是 通过@Import注解导入的，就通过下面方法先将配置类创建对应的beanDefinition对象，再创建本配置类
+			 *
+			 * 2.每一个配置类可能会有@Bean 注解的方法，将标有该注解的方法对应的类的信息也封装成beanDefinition
+			 *
+			 * 3.这里不是加载，只是调用@import注解中引入的类（实现了ImportBeanDefinitionRegistrar 接口的类） 的registerBeanDefinitions 方法
+			 * 	  当然也可以在这个调用的 方法里面进行beandefinition封装，或者其他操作
+			 *
+			 */
 			this.reader.loadBeanDefinitions(configClasses);
 			alreadyParsed.addAll(configClasses);
 
@@ -411,6 +430,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 							"is a non-static @Bean method with a BeanDefinitionRegistryPostProcessor " +
 							"return type: Consider declaring such methods as 'static'.");
 				}
+				/**
+				 * 将配置类添加到map集合中
+				 */
 				configBeanDefs.put(beanName, (AbstractBeanDefinition) beanDef);
 			}
 		}
@@ -419,19 +441,35 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			return;
 		}
 
+		/**
+		 * 创建一个配置类增强器
+		 */
 		ConfigurationClassEnhancer enhancer = new ConfigurationClassEnhancer();
 		for (Map.Entry<String, AbstractBeanDefinition> entry : configBeanDefs.entrySet()) {
 			AbstractBeanDefinition beanDef = entry.getValue();
 			// If a @Configuration class gets proxied, always proxy the target class
+			/**
+			 * 设置属性
+			 */
+			//todo
 			beanDef.setAttribute(AutoProxyUtils.PRESERVE_TARGET_CLASS_ATTRIBUTE, Boolean.TRUE);
 			// Set enhanced subclass of the user-specified bean class
+			/**
+			 * 取出原来的配置类
+			 */
 			Class<?> configClass = beanDef.getBeanClass();
+			/**
+			 * 进行增强配置类
+			 */
 			Class<?> enhancedClass = enhancer.enhance(configClass, this.beanClassLoader);
 			if (configClass != enhancedClass) {
 				if (logger.isTraceEnabled()) {
 					logger.trace(String.format("Replacing bean definition '%s' existing class '%s' with " +
 							"enhanced class '%s'", entry.getKey(), configClass.getName(), enhancedClass.getName()));
 				}
+				/**
+				 * 将增强后的配置类放回对应的beandefinition中
+				 */
 				beanDef.setBeanClass(enhancedClass);
 			}
 		}
