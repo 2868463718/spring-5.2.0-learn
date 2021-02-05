@@ -1,6 +1,7 @@
 package zy.blue7.test;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import zy.blue7.aop.Book;
 import zy.blue7.config.AppConfig;
 import zy.blue7.demo.User;
 
@@ -15,8 +16,10 @@ public class SpringTest {
 	}
 	public void testSpringContainer(){
 		AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(AppConfig.class);
-		User user = applicationContext.getBean(User.class);
-		System.out.println(user.toString());
+//		User user = applicationContext.getBean(User.class);
+//		System.out.println(user.toString());
+		Book book = applicationContext.getBean(Book.class);
+		book.buyBook("小说");
 
 		/**
 		 * 主要测试addBeanFactoryPostProcessor方法

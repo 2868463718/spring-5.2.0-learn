@@ -10,20 +10,22 @@ import zy.blue7.myimport.MyImportBeanDefinitionRegistrar;
  * @author blue7
  * @create 2021/1/12 17:26
  */
-@Configuration
-@ComponentScan({"zy.blue7"})
+
 /**
  * ymal，properties文件都支持
  */
-@PropertySource("classpath:application.properties")
-@PropertySource("classpath:application.yml")
 /**
  * MyImportSelector是实现importselector接口的实现类，该类中默认方法返回的字符串数组中的类的全限定名就是要导入的类
  */
 //@Import({Child.class)
 //@Import({MyImportSelector.class})
 //@Import({MyDeferredImportSelector.class})
+@PropertySource("classpath:application.properties")
+@PropertySource("classpath:application.yml")
+@Configuration
+@ComponentScan({"zy.blue7"})
 @Import({MyImportBeanDefinitionRegistrar.class})
+@EnableAspectJAutoProxy
 public class AppConfig {
 
 	//	@Bean

@@ -52,12 +52,15 @@ public class User implements MessageSourceAware , LoadTimeWeaverAware, MyAware {
 	}
 
 	/**
-	 * 自定义初始化方法 {@Bean注解中的指定初始化和销毁方法}
+	 * 自定义初始化方法 {@Bean注解中的指定初始化和销毁方法}  最后执行的自定义的初始化方法
 	 */
 	public void initMethod(){
 		System.out.println("this is 自定义的 init method");
 	}
 
+	/**
+	 * 初始化方法，最先执行的初始化方法
+	 */
 	@PostConstruct
 	public void postCon() {
 		System.out.println("this is @PostConstruct annotation  method ");
