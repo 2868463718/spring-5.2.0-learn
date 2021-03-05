@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
  * @author blue7
  * @create 2021/2/4 14:18
  */
-@Aspect
-@Component
+//@Aspect
+//@Component
 public class BookAspect {
 
 	/**

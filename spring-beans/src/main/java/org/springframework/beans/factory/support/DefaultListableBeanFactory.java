@@ -921,6 +921,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		 * 7.遍历beanNames，触发所有SmartInitializingSingleton的后初始化回调
 		 */
 		//todo 注意所有非懒加载的bean实例化完成后，回调此方法
+		//todo 主要应用场合就是在所有单例 bean 创建完成之后，可以在该回调中做一些事情
 		for (String beanName : beanNames) {
 			/**
 			 * 7.1 拿到beanName对应的bean实例
@@ -1317,6 +1318,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 				autowiredBeanNames.add(autowiredBeanName);
 			}
 			if (instanceCandidate instanceof Class) {
+				//todo 如果被@autiware注解标注，就会在这一步从 spring单例池中获取bean，没有就创建
 				instanceCandidate = descriptor.resolveCandidate(autowiredBeanName, type, this);
 			}
 			Object result = instanceCandidate;

@@ -433,6 +433,10 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 				}
 				if (resource.isReadable()) {
 					try {
+						/**
+						 * 这一步是将resource描述的资源（就是Java的class文件） 解析，主要是解析的结果是 该类上的元数据，该方法以及方法上的元数据
+						 */
+						//todo
 						MetadataReader metadataReader = getMetadataReaderFactory().getMetadataReader(resource);
 						if (isCandidateComponent(metadataReader)) {
 							/**

@@ -768,7 +768,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 				TypeConverter typeConverter = beanFactory.getTypeConverter();
 				try {
 					/**
-					 * 解析@value注解中属性value的值
+					 * 解析@value注解中属性value的值,和，解析@Autiware注解，如果是@Autiware注解就去创建对象
 					 */
 					value = beanFactory.resolveDependency(desc, beanName, autowiredBeanNames, typeConverter);
 				}

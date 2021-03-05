@@ -92,6 +92,10 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	 */
 	protected List<Advisor> findEligibleAdvisors(Class<?> beanClass, String beanName) {
 		List<Advisor> candidateAdvisors = findCandidateAdvisors();
+		/**
+		 * 通过之前的分析我们知道，一个切面类可以生成多个Advisor(多个切面类的话那就更多多的Advisor了)，
+		 * 这些Advisor是否都能适用于我们的目标类呢？这就需要通过Advisor中所拥有的Pointcut来进行判断了
+		 */
 		List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
 		extendAdvisors(eligibleAdvisors);
 		if (!eligibleAdvisors.isEmpty()) {
