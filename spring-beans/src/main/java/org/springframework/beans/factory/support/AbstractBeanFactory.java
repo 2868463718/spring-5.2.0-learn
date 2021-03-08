@@ -975,9 +975,15 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		this.beanPostProcessors.remove(beanPostProcessor);
 		// Track whether it is instantiation/destruction aware
 		if (beanPostProcessor instanceof InstantiationAwareBeanPostProcessor) {
+			/**
+			 * todo 标记有实例化处理器  /跟踪是否支持实例化/销毁
+			 */
 			this.hasInstantiationAwareBeanPostProcessors = true;
 		}
 		if (beanPostProcessor instanceof DestructionAwareBeanPostProcessor) {
+			/**
+			 * todo 标记有销毁处理器   /跟踪是否支持实例化/销毁
+			 */
 			this.hasDestructionAwareBeanPostProcessors = true;
 		}
 		// Add to end of list

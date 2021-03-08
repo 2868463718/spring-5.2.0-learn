@@ -35,6 +35,12 @@ public class MyEvent extends ApplicationEvent {
 	 * @param source the object on which the event initially occurred or with
 	 *               which the event is associated (never {@code null})
 	 */
+	/**
+	 *
+	 * @param source todo 任务就是一个普通的类，用来保存你要发布事件的内容。这个没有特殊限制，可以根据自己业务随意设置。
+	 * @param id
+	 * @param name
+	 */
 	public MyEvent(Object source, long id, String name) {
 		super(source);
 		this.id = id;

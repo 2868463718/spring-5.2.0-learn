@@ -16,9 +16,9 @@
 
 package org.springframework.context.event;
 
-import java.lang.reflect.Method;
-
 import org.springframework.context.ApplicationListener;
+
+import java.lang.reflect.Method;
 
 /**
  * Strategy interface for creating {@link ApplicationListener} for methods
@@ -27,10 +27,15 @@ import org.springframework.context.ApplicationListener;
  * @author Stephane Nicoll
  * @since 4.2
  */
+
+/**
+ * todo 这是一个创建监听器对象的工厂，为标有{@link ApplicationListener} 注解的方法（该方法的类可能是普通的类） 创建一个监听器对象
+ */
 public interface EventListenerFactory {
 
 	/**
 	 * Specify if this factory supports the specified {@link Method}.
+	 *
 	 * @param method an {@link EventListener} annotated method
 	 * @return {@code true} if this factory supports the specified method
 	 */
@@ -42,6 +47,15 @@ public interface EventListenerFactory {
 	 * @param type the target type of the instance
 	 * @param method the {@link EventListener} annotated method
 	 * @return an application listener, suitable to invoke the specified method
+	 */
+	/**
+	 * todo 这个方法主要是为给定的类的标有 {@link ApplicationListener} 注解的方法创建一个监听器对象
+	 * 具备监听器的途径有两个，一个是实现接口 {@link ApplicationListener}，一个是在方法上添加{@link ApplicationListener}注解
+	 *
+	 * @param beanName
+	 * @param type
+	 * @param method
+	 * @return
 	 */
 	ApplicationListener<?> createApplicationListener(String beanName, Class<?> type, Method method);
 
