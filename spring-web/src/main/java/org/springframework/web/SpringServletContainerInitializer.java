@@ -16,20 +16,20 @@
 
 package org.springframework.web;
 
-import java.lang.reflect.Modifier;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ServiceLoader;
-import java.util.Set;
+import org.apache.catalina.startup.ContextConfig;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
+import org.springframework.lang.Nullable;
+import org.springframework.util.ReflectionUtils;
 
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
-
-import org.springframework.core.annotation.AnnotationAwareOrderComparator;
-import org.springframework.lang.Nullable;
-import org.springframework.util.ReflectionUtils;
+import java.lang.reflect.Modifier;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ServiceLoader;
+import java.util.Set;
 
 /**
  * Servlet 3.0 {@link ServletContainerInitializer} designed to support code-based
@@ -105,13 +105,20 @@ import org.springframework.util.ReflectionUtils;
  * @author Chris Beams
  * @author Juergen Hoeller
  * @author Rossen Stoyanchev
- * @since 3.1
  * @see #onStartup(Set, ServletContext)
  * @see WebApplicationInitializer
+ * @since 3.1
  */
 @HandlesTypes(WebApplicationInitializer.class)
 public class SpringServletContainerInitializer implements ServletContainerInitializer {
 
+	/**
+	 * @see ContextConfig#processServletContainerInitializers()，这个地方是tomcat启动的时候会加载所有实现 {@link ServletContainerInitializer} 接口的类，然后执行onstartup方法
+	 * todo tomcat的spi机制会在tomcat启动的时候 找到所有实现 {@link ServletContainerInitializer} 接口的类，放入tomcat中，后面会执行 onStartup 方法
+	 * todo springmvc就是利用tomcat的这个spi扩展机制来进行扩展的
+	 * todo springmvc的入口就是在这个方法中
+	 *
+	 */
 	/**
 	 * Delegate the {@code ServletContext} to any {@link WebApplicationInitializer}
 	 * implementations present on the application classpath.
@@ -132,9 +139,10 @@ public class SpringServletContainerInitializer implements ServletContainerInitia
 	 * that each instance may register and configure servlets such as Spring's
 	 * {@code DispatcherServlet}, listeners such as Spring's {@code ContextLoaderListener},
 	 * or any other Servlet API componentry such as filters.
+	 *
 	 * @param webAppInitializerClasses all implementations of
-	 * {@link WebApplicationInitializer} found on the application classpath
-	 * @param servletContext the servlet context to be initialized
+	 *                                 {@link WebApplicationInitializer} found on the application classpath
+	 * @param servletContext           the servlet context to be initialized
 	 * @see WebApplicationInitializer#onStartup(ServletContext)
 	 * @see AnnotationAwareOrderComparator
 	 */
@@ -153,8 +161,7 @@ public class SpringServletContainerInitializer implements ServletContainerInitia
 					try {
 						initializers.add((WebApplicationInitializer)
 								ReflectionUtils.accessibleConstructor(waiClass).newInstance());
-					}
-					catch (Throwable ex) {
+					} catch (Throwable ex) {
 						throw new ServletException("Failed to instantiate WebApplicationInitializer class", ex);
 					}
 				}
