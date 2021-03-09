@@ -113,6 +113,9 @@ import java.util.Set;
 public class SpringServletContainerInitializer implements ServletContainerInitializer {
 
 	/**
+	 * todo 123
+	 */
+	/**
 	 * @see ContextConfig#processServletContainerInitializers()，这个地方是tomcat启动的时候会加载所有实现 {@link ServletContainerInitializer} 接口的类，然后执行onstartup方法
 	 * todo tomcat的spi机制会在tomcat启动的时候 找到所有实现 {@link ServletContainerInitializer} 接口的类，放入tomcat中，后面会执行 onStartup 方法
 	 * todo springmvc就是利用tomcat的这个spi扩展机制来进行扩展的
